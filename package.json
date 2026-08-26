@@ -21,6 +21,14 @@
   ],
   "license": "MIT",
   "author": "UVcat <edit_plus@naver.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/creepem/korean-lunar-astro.git"
+  },
+  "homepage": "https://github.com/creepem/korean-lunar-astro#readme",
+  "bugs": {
+    "url": "https://github.com/creepem/korean-lunar-astro/issues"
+  },
   "type": "module",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",

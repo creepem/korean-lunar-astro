@@ -1,6 +1,6 @@
 # korean-lunar-astro
 
-**English** | [한국어](./README.ko.md)
+**English** | [한국어](https://github.com/creepem/korean-lunar-astro/blob/main/README.ko.md)
 
 [![CI](https://github.com/creepem/korean-lunar-astro/actions/workflows/ci.yml/badge.svg)](https://github.com/creepem/korean-lunar-astro/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/korean-lunar-astro)](https://www.npmjs.com/package/korean-lunar-astro)
