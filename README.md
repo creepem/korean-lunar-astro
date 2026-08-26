@@ -1,19 +1,20 @@
 # korean-lunar-astro
 
+**English** | [한국어](./README.ko.md)
+
 [![CI](https://github.com/creepem/korean-lunar-astro/actions/workflows/ci.yml/badge.svg)](https://github.com/creepem/korean-lunar-astro/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/korean-lunar-astro)](https://www.npmjs.com/package/korean-lunar-astro)
 [![npm downloads](https://img.shields.io/npm/dw/korean-lunar-astro)](https://www.npmjs.com/package/korean-lunar-astro)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/korean-lunar-astro)](https://bundlephobia.com/package/korean-lunar-astro)
 [![license](https://img.shields.io/npm/l/korean-lunar-astro)](./LICENSE)
 
-한국 음력 ↔ 양력 변환을 **룩업 테이블 없이 천문 계산으로** 수행하는 라이브러리입니다.
-태양의 시황경(VSOP87)과 달의 위치(Meeus 제47장)로 24절기와 합삭 시각을 직접 구하고,
-전통 치윤 규칙(무중치윤법)으로 윤달을 배치합니다.
+Korean lunar calendar (음력) ↔ solar calendar conversion, computed
+**astronomically instead of from lookup tables**. True solar terms and true
+new moons are calculated from the Sun's apparent longitude (VSOP87) and the
+Moon's position (Meeus ch. 47), and leap months (윤달) are placed by the
+traditional no-junggi rule (무중치윤법).
 
-Korean lunar calendar conversion computed from first principles — true solar
-terms and true new moons via VSOP87 (Earth) and Meeus ch. 47 (Moon), with the
-traditional no-junggi leap-month rule. No lookup tables, no supported-range
-cliff. Zero dependencies, ~20 kB.
+Zero dependencies, ~20 kB, TypeScript, ESM + CommonJS.
 
 ```bash
 npm install korean-lunar-astro
@@ -23,79 +24,91 @@ npm install korean-lunar-astro
 import { solarToLunar, lunarToSolar, getLunarMonthLength, isValidLunarDate } from 'korean-lunar-astro';
 
 solarToLunar(2025, 10, 6);
-// { year: 2025, month: 8, day: 15, isLeapMonth: false }  ← 추석
+// { year: 2025, month: 8, day: 15, isLeapMonth: false }  ← Chuseok
 
 lunarToSolar(2026, 1, 1);
-// { year: 2026, month: 2, day: 17 }  ← 설날
+// { year: 2026, month: 2, day: 17 }  ← Seollal (Korean New Year)
 
-lunarToSolar(2020, 4, 1, true); // 윤4월
+lunarToSolar(2020, 4, 1, true); // leap 4th month
 // { year: 2020, month: 5, day: 23 }
 
-getLunarMonthLength(2024, 1);   // 29 (작은달)
+getLunarMonthLength(2024, 1);   // 29 (short month)
 isValidLunarDate(2024, 1, 30);  // false
 ```
 
-CommonJS도 지원합니다: `const { solarToLunar } = require('korean-lunar-astro');`
+CommonJS works too: `const { solarToLunar } = require('korean-lunar-astro');`
 
-## 왜 이 라이브러리인가
+## Why this library
 
-| | 테이블 방식 (기존 패키지들) | korean-lunar-astro |
+| | Table-based packages | korean-lunar-astro |
 |---|---|---|
-| 지원 범위 | 테이블 수록 구간(예: 1000–2050)에서 끝 | **1000–2500** (천문 계산이라 절벽 없음) |
-| 2033년 윤달 문제 | 테이블이 틀리면 같이 틀림 | **윤11월로 정확히 계산** (아래 참고) |
-| 24절기 | 없음 | 내부 계산 (동지 기준 치윤) |
-| 다른 나라 음력 | 불가 | `meridianHours` 옵션으로 근사 가능 |
-| 번들 크기 | 수십 kB 테이블 | ~20 kB, 의존성 0 |
+| Supported range | Ends where the table ends (e.g. 1000–2050) | **1000–2500** — computed, no cliff |
+| The 2033 leap-month problem | Wrong if the table is wrong | **Correctly resolves to leap month 11** (see below) |
+| 24 solar terms | Not available | Computed internally (solstice-anchored intercalation) |
+| Other lunisolar calendars | No | Approximated via the `meridianHours` option |
+| Bundle size | Tens of kB of tables | ~20 kB, zero dependencies |
 
-### 2033년 문제
+### The 2033 problem
 
-2033–2034년은 동지·삭 배치가 꼬여 윤달 위치가 계산법에 따라 갈리는 유명한
-경계 사례입니다(한국천문연구원 공식: **윤11월**). 순환 주기 근사나 오래된
-테이블을 쓰는 구현은 윤7월 등으로 틀리는 경우가 있습니다.
+2033–2034 is a famous edge case where the alignment of solstices and new
+moons makes the leap-month placement genuinely ambiguous unless computed
+properly (the official answer from KASI, the Korea Astronomy and Space
+Science Institute: **leap month 11**). Implementations based on cyclic
+approximations or stale tables often place it incorrectly (e.g. leap month 7).
 
 ```ts
 solarToLunar(2033, 12, 22);
-// { year: 2033, month: 11, day: 1, isLeapMonth: true }  ← 윤11월 ✓
+// { year: 2033, month: 11, day: 1, isLeapMonth: true }  ← leap 11th month ✓
 ```
 
-## 정확도와 검증
+## Accuracy & validation
 
-- **1900–2100년 전수(73,414일) 골든 테스트** — 커밋마다 CI에서 하루도 빠짐없이 검증
-- **1980–2030년 양방향 왕복 변환 전수 검사**
-- 설날·추석·부처님오신날 등 KASI 공표 날짜 대조
-- 윤2월(2023)·윤4월(2020)·윤5월(2017)·윤9월(2014) 및 2033 윤11월 케이스
-- 1582년 그레고리력 개력 경계(10월 4일 → 10월 15일) 연속성
+- **Full golden sweep of 73,414 days (1900–2100)** — every single day
+  verified in CI on every commit
+- **Bidirectional round-trip check over every day of 1980–2030**
+- Cross-checked against KASI-published holiday dates (Seollal, Chuseok,
+  Buddha's Birthday)
+- Leap-month cases: 2023 (leap 2), 2020 (leap 4), 2017 (leap 5), 2014
+  (leap 9), and the 2033 leap-11 edge case
+- Continuity across the Gregorian reform boundary (1582-10-04 → 1582-10-15)
 
-계산 정밀도: 태양 황경 ≈1″, 달 황경 ≈10″. 합삭이 자정에 수 초 이내로
-근접하는 극단적 경우 이론상 하루 차이가 날 수 있으나, 검증 구간(1900–2100)
-에서는 발생하지 않았습니다.
+Computational precision: about 1″ in solar longitude, 10″ in lunar
+longitude. In theory a date could shift by one day if a new moon falls
+within a few seconds of midnight; this does not occur anywhere in the
+validated 1900–2100 range.
 
-> **면책**: 대한민국 공식 음력은 한국천문연구원(KASI)이 결정합니다. 법적·공식
-> 용도로는 KASI 발표를 우선하세요. 특히 먼 미래의 날짜는 ΔT(지구 자전 감속)
-> 예측 불확실성의 영향을 받습니다.
+> **Disclaimer**: the official Korean lunar calendar is determined by KASI.
+> For legal or official purposes, defer to KASI publications. Dates far in
+> the future are subject to ΔT (Earth rotation slowdown) prediction
+> uncertainty.
 
-## 성능
+## Performance
 
-| 시나리오 | 시간 |
+| Scenario | Time |
 |---|---|
-| 처음 보는 연도 (콜드) | ~8 ms |
-| 같은 연도 재변환 (캐시) | **~4 µs** |
-| 201개 연도 콜드 스윕 | ~285 ms |
+| First lookup in a year (cold) | ~8 ms |
+| Repeat lookup in the same year (cached) | **~4 µs** |
+| Cold sweep across 201 years | ~285 ms |
 
-연 단위로 월 배치표를 캐시하므로, 달력 UI처럼 한 해를 반복 조회하는
-경우 사실상 무료입니다.
+The month layout of each lunisolar year is cached in memory: the
+astronomical computation (~8 ms) runs only on the first lookup of a year;
+subsequent lookups in the same year are a table lookup (~4 µs). Calendar-UI
+style workloads that query one year repeatedly pay almost no additional
+computation cost.
 
 ## API
 
 ### `solarToLunar(year, month, day, options?) → KoreanLunarDate`
 
-양력 → 음력. 1582-10-15 이전은 율리우스력으로 해석합니다.
-존재하지 않는 날짜(2월 30일, 1582년 10월 5–14일 등)는 `RangeError`.
+Solar → lunar. Dates before 1582-10-15 are interpreted in the Julian
+calendar. Nonexistent dates (Feb 30, the ten days removed by the Gregorian
+reform, …) throw a `RangeError`.
 
 ### `lunarToSolar(year, month, day, isLeapMonth?, options?) → SolarDate`
 
-음력 → 양력. 존재하지 않는 음력 날짜 — 없는 윤달, 작은달(29일)의 30일 —
-는 조용히 다음 달로 넘기지 않고 `RangeError`를 던집니다.
+Lunar → solar. Nonexistent lunar dates — a leap month that does not occur
+that year, or day 30 of a 29-day month — throw a `RangeError` instead of
+silently rolling into the next month.
 
 ### `getLunarMonthLength(year, month, isLeapMonth?, options?) → 29 | 30`
 
@@ -103,37 +116,47 @@ solarToLunar(2033, 12, 22);
 
 ### `options.meridianHours`
 
-합삭·절기가 어느 날짜에 속하는지 판정할 기준 자오선(동경, 시간 단위).
-기본값은 한국 규칙(1911년 이후 UTC+9, 이전 UTC+8)입니다.
+The reference meridian (hours east of Greenwich) used to decide which civil
+day a new moon or solar term falls on. Defaults to the Korean historical
+rule: UTC+9 from 1911 onward, UTC+8 before that.
 
 ```ts
-// 1997년 설: 한국 2/8, 중국 춘절 2/7 — 기준시 1시간 차이로 하루가 밀린 해
-lunarToSolar(1997, 1, 1);                         // { year: 1997, month: 2, day: 8 }
+// Korean New Year 1997 was Feb 8 (KST); Chinese New Year was Feb 7 —
+// one of the years where the 1-hour meridian difference shifts the day.
+lunarToSolar(1997, 1, 1);                              // { year: 1997, month: 2, day: 8 }
 lunarToSolar(1997, 1, 1, false, { meridianHours: 8 }); // { year: 1997, month: 2, day: 7 }
 ```
 
-`8`은 중국 농력, `7`은 베트남 음력의 **근사**입니다(각국 공식 역법과는 ΔT
-모델·공표 규칙 차이로 다를 수 있음). 1950–2050년 사이 한국(UTC+9)과
-UTC+8 기준의 결과는 전체 날짜의 약 3.7%에서 하루 어긋납니다.
+`8` approximates the Chinese lunisolar calendar and `7` the Vietnamese one
+(their official calendars may still differ due to ΔT models and official
+announcement rules). Between 1950 and 2050, the UTC+9 and UTC+8 results
+differ on about 3.7% of all days.
 
-## 계산 방법
+## How it works
 
-1. 기준 동지(천정동지)를 찾아 음력 연도를 고정
-2. VSOP87 지구 위치로 12중기(태양 황경 30° 간격)의 진짜 입기 시각 계산 — 정기법
-3. Meeus 제47장 달 위치로 진짜 합삭 시각 계산 — 정삭법
-4. 합삭일~다음 합삭일 전날이 한 달; 중기를 포함한 달에 이름을 부여하고,
-   동지가 든 달은 무조건 11월(동짓달)
-5. 동지 사이 삭망월이 13개면 중기 없는 첫 달을 윤달로 — 무중치윤법
+1. Anchor the lunisolar year on the winter solstice (천정동지)
+2. Compute the true instants of the 12 major solar terms (every 30° of
+   apparent solar longitude) from the VSOP87 Earth position
+3. Compute the true new-moon instants from the Meeus ch. 47 lunar position
+4. A lunar month runs from one new-moon day to the day before the next;
+   each month is named by the major term it contains, and the month
+   containing the winter solstice is always month 11
+5. When 13 lunations fall between successive winter solstices, the first
+   month without a major term becomes the leap month — the traditional
+   no-junggi intercalation rule (무중치윤법)
 
-ΔT(지구시-세계시 차)는 구간별 다항식/표 근사를 사용합니다.
+ΔT (Terrestrial Time − Universal Time) uses piecewise polynomial/table
+approximations.
 
-## 데이터 출처
+## Data sources
 
-- P. Bretagnon & G. Francou, *Planetary theories in rectangular and spherical
-  variables — VSOP87 solutions*, Astronomy & Astrophysics 202 (1988)
+- P. Bretagnon & G. Francou, *Planetary theories in rectangular and
+  spherical variables — VSOP87 solutions*, Astronomy & Astrophysics 202
+  (1988)
 - J. Meeus, *Astronomical Algorithms*, 2nd ed. (1998) — ch. 25, 32, 47;
   Table 47.A/47.B
-- 치윤 규칙: 시헌력 전통 무중치윤법
+- Intercalation rule: the traditional no-junggi rule of the Shixian
+  calendar (시헌력)
 
 ## License
 
