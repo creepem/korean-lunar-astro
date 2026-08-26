@@ -1,0 +1,52 @@
+{
+  "name": "korean-lunar-astro",
+  "version": "0.1.0",
+  "description": "Korean lunar calendar (음력) conversion computed astronomically — VSOP87 + Meeus, no lookup tables, no supported-range cliff. Handles leap months (윤달) including the 2033 edge case.",
+  "keywords": [
+    "korean",
+    "lunar",
+    "calendar",
+    "lunisolar",
+    "음력",
+    "양력",
+    "윤달",
+    "seollal",
+    "chuseok",
+    "korea",
+    "astronomy",
+    "vsop87",
+    "meeus",
+    "new-moon",
+    "solar-term"
+  ],
+  "license": "MIT",
+  "author": "edit_plus <edit_plus@naver.com>",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node scripts/fixup-cjs.mjs",
+    "test": "npm run build && node --test test/",
+    "prepublishOnly": "npm test"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
