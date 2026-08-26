@@ -1,6 +1,6 @@
 {
   "name": "korean-lunar-astro",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Korean lunar calendar (음력) conversion computed astronomically — VSOP87 + Meeus, no lookup tables, no supported-range cliff. Handles leap months (윤달) including the 2033 edge case.",
   "keywords": [
     "korean",
