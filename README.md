@@ -1,5 +1,11 @@
 # korean-lunar-astro
 
+[![CI](https://github.com/creepem/korean-lunar-astro/actions/workflows/ci.yml/badge.svg)](https://github.com/creepem/korean-lunar-astro/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/korean-lunar-astro)](https://www.npmjs.com/package/korean-lunar-astro)
+[![npm downloads](https://img.shields.io/npm/dw/korean-lunar-astro)](https://www.npmjs.com/package/korean-lunar-astro)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/korean-lunar-astro)](https://bundlephobia.com/package/korean-lunar-astro)
+[![license](https://img.shields.io/npm/l/korean-lunar-astro)](./LICENSE)
+
 한국 음력 ↔ 양력 변환을 **룩업 테이블 없이 천문 계산으로** 수행하는 라이브러리입니다.
 태양의 시황경(VSOP87)과 달의 위치(Meeus 제47장)로 24절기와 합삭 시각을 직접 구하고,
 전통 치윤 규칙(무중치윤법)으로 윤달을 배치합니다.

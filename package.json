@@ -43,7 +43,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node scripts/fixup-cjs.mjs",
-    "test": "npm run build && node --test test/",
+    "test": "npm run build && node --test test/api.test.mjs test/golden.test.mjs",
     "prepublishOnly": "npm test"
   },
   "devDependencies": {
