@@ -21,7 +21,7 @@ npm install korean-lunar-astro
 ```
 
 ```ts
-import { solarToLunar, lunarToSolar, getLunarMonthLength, isValidLunarDate } from 'korean-lunar-astro';
+import { solarToLunar, lunarToSolar, getLunarMonthLength, isValidLunarDate, getGanji } from 'korean-lunar-astro';
 
 solarToLunar(2025, 10, 6);
 // { year: 2025, month: 8, day: 15, isLeapMonth: false }  ← Chuseok
@@ -34,6 +34,12 @@ lunarToSolar(2020, 4, 1, true); // leap 4th month
 
 getLunarMonthLength(2024, 1);   // 29 (short month)
 isValidLunarDate(2024, 1, 30);  // false
+
+getGanji(2024, 2, 10);          // sexagenary cycle (간지) pillars
+// { year:  { name: '갑진', hanja: '甲辰', stem: 0, branch: 4 },
+//   month: { name: '병인', hanja: '丙寅', ... },
+//   day:   { name: '갑진', hanja: '甲辰', ... },
+//   lunar: { year: 2024, month: 1, day: 1, isLeapMonth: false } }
 ```
 
 CommonJS works too: `const { solarToLunar } = require('korean-lunar-astro');`
@@ -42,10 +48,11 @@ CommonJS works too: `const { solarToLunar } = require('korean-lunar-astro');`
 
 | | Table-based packages | korean-lunar-astro |
 |---|---|---|
-| Supported range | Ends where the table ends (e.g. 1000–2050) | **1000–2500** — computed, no cliff |
-| The 2033 leap-month problem | Wrong if the table is wrong | **Correctly resolves to leap month 11** (see below) |
+| Supported range | Ends where the table ends (e.g. ~2050) — later dates are rejected | **1000–2500** — computed, no cliff |
+| The 2033 leap-month problem | Depends on table quality (KASI-derived tables are correct) | **Computed directly: leap month 11** (see below) |
 | 24 solar terms | Not available | Computed internally (solstice-anchored intercalation) |
 | Other lunisolar calendars | No | Approximated via the `meridianHours` option |
+| Sexagenary pillars (간지) | String output | Korean + hanja, structured with indices |
 | Bundle size | Tens of kB of tables | ~20 kB, zero dependencies |
 
 ### The 2033 problem
@@ -53,8 +60,9 @@ CommonJS works too: `const { solarToLunar } = require('korean-lunar-astro');`
 2033–2034 is a famous edge case where the alignment of solstices and new
 moons makes the leap-month placement genuinely ambiguous unless computed
 properly (the official answer from KASI, the Korea Astronomy and Space
-Science Institute: **leap month 11**). Implementations based on cyclic
-approximations or stale tables often place it incorrectly (e.g. leap month 7).
+Science Institute: **leap month 11**). Hand-rolled implementations based on
+cyclic approximations or unverified tables often place it incorrectly
+(e.g. leap month 7); this library derives the correct answer astronomically.
 
 ```ts
 solarToLunar(2033, 12, 22);
@@ -113,6 +121,19 @@ silently rolling into the next month.
 ### `getLunarMonthLength(year, month, isLeapMonth?, options?) → 29 | 30`
 
 ### `isValidLunarDate(year, month, day, isLeapMonth?, options?) → boolean`
+
+### `getGanji(year, month, day, options?) → Ganji`
+
+Sexagenary-cycle pillars for a solar date: the **year pillar** (세차 —
+follows the lunar year, so it changes at Seollal), **month pillar** (월건)
+and **day pillar** (일진), each with Korean reading, hanja and stem/branch
+indices. A leap month shares its named month's pillar; use
+`lunar.isLeapMonth` on the result to render the customary "윤" marker.
+
+```ts
+const g = getGanji(2025, 1, 29);
+`${g.year.name}년 ${g.month.name}월 ${g.day.name}일`; // '을사년 무인월 무술일'
+```
 
 ### `options.meridianHours`
 

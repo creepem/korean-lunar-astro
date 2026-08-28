@@ -8,6 +8,9 @@
  */
 import { julianDay, invJD, isValidSolarDate } from './julian.js';
 import { jdToLunar, findLunarMonth } from './calendar.js';
+import { ganjiForSolar } from './ganji.js';
+
+export type { Ganji, GanjiPillar } from './ganji.js';
 
 export interface KoreanLunarDate {
   /** Lunar year. */
@@ -110,6 +113,30 @@ export function getLunarMonthLength(year: number, month: number, isLeapMonth = f
     throw new RangeError(`lunar month does not exist: ${year}-${month}${isLeapMonth ? ' (leap)' : ''}`);
   }
   return entry.length;
+}
+
+/**
+ * Sexagenary-cycle pillars (간지) for a solar date: year pillar (세차, follows
+ * the lunar year so it changes at Seollal), month pillar (월건) and day pillar
+ * (일진), each with Korean reading and hanja.
+ *
+ * A leap month shares its named month's pillar; check `lunar.isLeapMonth`
+ * on the result to render the customary "윤" marker.
+ *
+ * @example
+ * getGanji(2024, 2, 10);
+ * // { year: { name: "갑진", hanja: "甲辰", ... },
+ * //   month: { name: "병인", ... }, day: { name: "갑진", ... },
+ * //   lunar: { year: 2024, month: 1, day: 1, isLeapMonth: false } }
+ *
+ * @throws RangeError if the solar date does not exist or is out of range.
+ */
+export function getGanji(year: number, month: number, day: number, options?: ConvertOptions) {
+  assertYear(year);
+  if (!isValidSolarDate(year, month, day)) {
+    throw new RangeError(`invalid solar date: ${year}-${month}-${day}`);
+  }
+  return ganjiForSolar(year, month, day, meridianFor(year, options));
 }
 
 /** True if the given lunar date exists (month, leap-month flag and day). */

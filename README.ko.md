@@ -17,7 +17,7 @@ npm install korean-lunar-astro
 ```
 
 ```ts
-import { solarToLunar, lunarToSolar, getLunarMonthLength, isValidLunarDate } from 'korean-lunar-astro';
+import { solarToLunar, lunarToSolar, getLunarMonthLength, isValidLunarDate, getGanji } from 'korean-lunar-astro';
 
 solarToLunar(2025, 10, 6);
 // { year: 2025, month: 8, day: 15, isLeapMonth: false }  ← 추석
@@ -30,6 +30,12 @@ lunarToSolar(2020, 4, 1, true); // 윤4월
 
 getLunarMonthLength(2024, 1);   // 29 (작은달)
 isValidLunarDate(2024, 1, 30);  // false
+
+getGanji(2024, 2, 10);          // 간지 (세차·월건·일진)
+// { year:  { name: '갑진', hanja: '甲辰', stem: 0, branch: 4 },
+//   month: { name: '병인', hanja: '丙寅', ... },
+//   day:   { name: '갑진', hanja: '甲辰', ... },
+//   lunar: { year: 2024, month: 1, day: 1, isLeapMonth: false } }
 ```
 
 CommonJS도 지원합니다: `const { solarToLunar } = require('korean-lunar-astro');`
@@ -38,17 +44,19 @@ CommonJS도 지원합니다: `const { solarToLunar } = require('korean-lunar-ast
 
 | | 테이블 방식 (기존 패키지들) | korean-lunar-astro |
 |---|---|---|
-| 지원 범위 | 테이블 수록 구간(예: 1000–2050)에서 끝 | **1000–2500** (천문 계산이라 절벽 없음) |
-| 2033년 윤달 문제 | 테이블이 틀리면 같이 틀림 | **윤11월로 정확히 계산** (아래 참고) |
+| 지원 범위 | 테이블 수록 구간(예: ~2050)에서 끝 — 이후 날짜는 변환 거부 | **1000–2500** (천문 계산이라 절벽 없음) |
+| 2033년 윤달 문제 | 수록 테이블 품질에 의존 (KASI 기반 테이블은 정확) | **윤11월로 직접 계산** (아래 참고) |
 | 24절기 | 없음 | 내부 계산 (동지 기준 치윤) |
 | 다른 나라 음력 | 불가 | `meridianHours` 옵션으로 근사 가능 |
+| 간지(세차·월건·일진) | 문자열 출력 | 한글+한자, 인덱스 포함 구조체 |
 | 번들 크기 | 수십 kB 테이블 | ~20 kB, 의존성 0 |
 
 ### 2033년 문제
 
 2033–2034년은 동지·삭 배치가 꼬여 윤달 위치가 계산법에 따라 갈리는 유명한
-경계 사례입니다(한국천문연구원 공식: **윤11월**). 순환 주기 근사나 오래된
-테이블을 쓰는 구현은 윤7월 등으로 틀리는 경우가 있습니다.
+경계 사례입니다(한국천문연구원 공식: **윤11월**). 순환 주기 근사식으로 직접
+구현하거나 검증 안 된 테이블을 쓰면 윤7월 등으로 틀리기 쉬운 지점인데,
+이 라이브러리는 천문 계산으로 직접 정답을 도출합니다.
 
 ```ts
 solarToLunar(2033, 12, 22);
@@ -98,6 +106,18 @@ solarToLunar(2033, 12, 22);
 ### `getLunarMonthLength(year, month, isLeapMonth?, options?) → 29 | 30`
 
 ### `isValidLunarDate(year, month, day, isLeapMonth?, options?) → boolean`
+
+### `getGanji(year, month, day, options?) → Ganji`
+
+양력 날짜의 간지: **세차**(년주 — 음력 연도 기준이라 설날에 바뀜),
+**월건**(월주), **일진**(일주)을 한글·한자·인덱스로 반환합니다.
+윤달은 관례대로 같은 이름 평달의 월건을 공유하며, 결과의
+`lunar.isLeapMonth`로 "윤" 표기를 붙일 수 있습니다.
+
+```ts
+const g = getGanji(2025, 1, 29);
+`${g.year.name}년 ${g.month.name}월 ${g.day.name}일`; // '을사년 무인월 무술일'
+```
 
 ### `options.meridianHours`
 
